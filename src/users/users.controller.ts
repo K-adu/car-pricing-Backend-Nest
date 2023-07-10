@@ -8,8 +8,6 @@ import {
   Query,
   Delete,
   NotFoundException,
-  UseInterceptors,
-  ClassSerializerInterceptor,
 } from '@nestjs/common';
 
 //dtos
@@ -18,7 +16,10 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 
 //services
 import { UsersService } from './users.service';
+import { Serialize } from 'src/interceptors/serialize.interceptor';
+import { UserDto } from './dtos/user.dto';
 
+@Serialize(UserDto)
 @Controller('auth')
 export class UsersController {
   constructor(private usersService: UsersService) {}
@@ -29,11 +30,10 @@ export class UsersController {
     console.log(body);
   }
 
-  // the exclude decorator works with classSerializer interceptor
-  @UseInterceptors(ClassSerializerInterceptor)
   @Get('/:id')
   async findUser(@Param('id') id: string) {
-    const user = await this.usersService.findOne(parseInt(id));
+    console.log('handler is running');
+    const user = await this.usersService.findOne(id);
     if (!user) {
       throw new NotFoundException('user not found');
     }
@@ -47,11 +47,11 @@ export class UsersController {
 
   @Delete('/:id')
   removeUser(@Param('id') id: string) {
-    return this.usersService.remove(parseInt(id));
+    return this.usersService.remove(id);
   }
 
   @Patch('/:id')
   updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
-    return this.usersService.update(parseInt(id), body);
+    return this.usersService.update(id, body);
   }
 }
