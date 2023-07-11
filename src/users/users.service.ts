@@ -7,8 +7,9 @@ export class UsersService {
   constructor(private repo: UserRepository) {}
 
   //creating new user
-  create(email: string, password: string) {
+  create(id: number, email: string, password: string) {
     const data: object = {
+      id: id,
       email: email,
       password: password,
     };

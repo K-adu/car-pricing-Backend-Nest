@@ -30,7 +30,7 @@ export class UserRepository {
     return user;
   }
 
-  //
+  //updating the user
   async update(id: string, attrs: Partial<User>) {
     const user = await this.findById(id);
     if (!user) {
