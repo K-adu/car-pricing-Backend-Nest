@@ -9,6 +9,7 @@ import {
   Delete,
   NotFoundException,
   Session,
+  UseGuards,
 } from '@nestjs/common';
 
 //dtos
@@ -20,23 +21,33 @@ import { UsersService } from './users.service';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { UserDto } from './dtos/user.dto';
 import { AuthService } from './auth.service';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { User } from './schemas/users.schema';
+import { AuthGuard } from 'src/guards/auth.guard';
 
-@Serialize(UserDto)
 @Controller('auth')
+@Serialize(UserDto)
 export class UsersController {
   constructor(
     private usersService: UsersService,
     private authService: AuthService,
   ) {}
 
+  @Get('/whoami')
+  @UseGuards(AuthGuard)
+  whoAmI(@CurrentUser() user: User) {
+    return user;
+  }
   @Post('/signout')
   signOut(@Session() session: any) {
+    console.log(session.userId);
     session.userId = null;
   }
   @Post('/signup')
   async createUser(@Body() body: CreateUserDto, @Session() session: any) {
     const user = await this.authService.signup(body.email, body.password);
-    session.userEmail = user.id;
+    session.userId = user.id;
+    console.log;
     return user;
   }
   @Post('/signin')
@@ -47,7 +58,6 @@ export class UsersController {
   }
   @Get('/:id')
   async findUser(@Param('id') id: string) {
-    console.log('handler is running');
     const user = await this.usersService.findOne(id);
     if (!user) {
       throw new NotFoundException('user not found');
